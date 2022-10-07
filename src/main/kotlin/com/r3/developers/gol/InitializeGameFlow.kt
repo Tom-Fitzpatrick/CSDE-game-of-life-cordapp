@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate
+package com.r3.developers.gol
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
@@ -10,21 +10,18 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
-// A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 
-// A class which will contain a message, It must be marked with @CordaSerializable for Corda
-// to be able to send from one virtual node to another.
-@CordaSerializable
-class Message(val sender: MemberX500Name, val message: String)
+//@CordaSerializable
+//class Message(val sender: MemberX500Name, val message: String)
 
 
 // MyFirstFlow is an initiating flow, it's corresponding responder flow is called MyFirstFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatingFlow(protocol = "my-first-flow")
 // MyFirstFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
-class MyFirstFlow: RPCStartableFlow {
+class InitializeGameFlow: RPCStartableFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {

@@ -1,7 +1,21 @@
 {
 "identities" : [
- "CN=Alice, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Charlie, OU=Test Dept, O=R3, L=London, C=GB"
+ "CN=Main, OU=leader, O=R3, L=London, C=GB",
+ "CN=X0Y0, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X1Y0, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X2Y0, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X3Y0, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X0Y1, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X1Y1, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X2Y1, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X3Y1, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X0Y2, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X1Y2, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X2Y2, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X3Y2, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X0Y3, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X1Y3, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X2Y3, OU=pixel, O=R3, L=London, C=GB",
+ "CN=X3Y3, OU=pixel, O=R3, L=London, C=GB"
  ]
 }
