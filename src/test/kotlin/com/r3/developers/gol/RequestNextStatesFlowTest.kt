@@ -53,92 +53,92 @@ class RequestNextStatesFlowTest {
     private val gameIdentity = MemberX500Name.parse("CN=Game, OU=Admin, O=R3, L=London, C=GB")
     private val stateIdentity = MemberX500Name.parse("CN=State, OU=Admin, O=R3, L=London, C=GB")
 
-    @Test
-    fun `test that State Flow returns correct message`() {
+//    @Test
+//    fun `test that State Flow returns correct message`() {
+//
+//        val simulator = Simulator()
+//
+//        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
+//        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
+//        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
+//
+//        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java, RequestIndividualStateFlow::class.java)
+//
+//        for (pixelID in pixelHoldingIds) {
+//            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
+//        }
+//
+//        var initialGamestate = GameState(
+//            arrayOf(
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//                charArrayOf('.', '.', 'X', 'X', '.', '.'),
+//                charArrayOf('.', 'X', 'X', '.', '.', '.'),
+//                charArrayOf('.', '.', 'X', '.', '.', '.'),
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//        ))
+//
+//        val requestData = RequestData.create(
+//            "request no 1",
+//            RequestIndividualStateFlow::class.java,
+//            initialGamestate
+//        )
+//
+//        val flowResponse = stateVN.callFlow(requestData)
+//
+//        val expectedResponse = """["......",".XXX..",".X....",".XX...","......","......"]"""
+//
+//        println("response received:")
+//        println(flowResponse)
+//        println("expected response")
+//        println(expectedResponse)
+//
+//        assert(flowResponse == expectedResponse)
+//    }
 
-        val simulator = Simulator()
-
-        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
-        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
-        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
-
-        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java, RequestIndividualStateFlow::class.java)
-
-        for (pixelID in pixelHoldingIds) {
-            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
-        }
-
-        var initialGamestate = GameState(
-            arrayOf(
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', 'X', '.', '.'),
-                charArrayOf('.', 'X', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-        ))
-
-        val requestData = RequestData.create(
-            "request no 1",
-            RequestIndividualStateFlow::class.java,
-            initialGamestate
-        )
-
-        val flowResponse = stateVN.callFlow(requestData)
-
-        val expectedResponse = """["......",".XXX..",".X....",".XX...","......","......"]"""
-
-        println("response received:")
-        println(flowResponse)
-        println("expected response")
-        println(expectedResponse)
-
-        assert(flowResponse == expectedResponse)
-    }
-
-    @Test
-    fun `test that Game Flow returns correct message`() {
-
-        val simulator = Simulator()
-
-        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
-        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
-        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
-
-        val gameVN = simulator.createVirtualNode(gameHoldingId, RunGameOfLifeFlow::class.java)
-        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java)
-
-        for (pixelID in pixelHoldingIds) {
-            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
-        }
-
-        var initialGamestate = GameState(
-            arrayOf(
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', 'X', '.', '.'),
-                charArrayOf('.', 'X', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-        ))
-
-        val requestData = RequestData.create(
-            "request no 1",
-            RunGameOfLifeFlow::class.java,
-            initialGamestate
-        )
-
-        val flowResponse = gameVN.callFlow(requestData)
-        val expectedResponse = """[".XXX..",".X.X..","X....X","XX...X","X....X",".XXX.."]"""
-
-        println("flow response:")
-        println(flowResponse)
-        println("expected response:")
-        println(expectedResponse)
-
-
-        assert(flowResponse == expectedResponse)
-    }
+//    @Test
+//    fun `test that Game Flow returns correct message`() {
+//
+//        val simulator = Simulator()
+//
+//        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
+//        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
+//        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
+//
+//        val gameVN = simulator.createVirtualNode(gameHoldingId, RunGameOfLifeFlow::class.java)
+//        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java)
+//
+//        for (pixelID in pixelHoldingIds) {
+//            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
+//        }
+//
+//        var initialGamestate = GameState(
+//            arrayOf(
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//                charArrayOf('.', '.', 'X', 'X', '.', '.'),
+//                charArrayOf('.', 'X', 'X', '.', '.', '.'),
+//                charArrayOf('.', '.', 'X', '.', '.', '.'),
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//                charArrayOf('.', '.', '.', '.', '.', '.'),
+//        ))
+//
+//        val requestData = RequestData.create(
+//            "request no 1",
+//            RunGameOfLifeFlow::class.java,
+//            initialGamestate
+//        )
+//
+//        val flowResponse = gameVN.callFlow(requestData)
+//        val expectedResponse = """[".XXX..",".X.X..","X....X","XX...X","X....X",".XXX.."]"""
+//
+//        println("flow response:")
+//        println(flowResponse)
+//        println("expected response:")
+//        println(expectedResponse)
+//
+//
+//        assert(flowResponse == expectedResponse)
+//    }
 
     @Test
     fun `test that infinite pattern continues correctly`() {

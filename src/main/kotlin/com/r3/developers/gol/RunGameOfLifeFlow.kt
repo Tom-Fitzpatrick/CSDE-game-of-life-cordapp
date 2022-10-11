@@ -9,7 +9,7 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
-@InitiatingFlow(protocol = "get-next-states")
+@InitiatingFlow(protocol = "game-of-life")
 class RunGameOfLifeFlow: RPCStartableFlow {
 
     private companion object {
@@ -28,7 +28,7 @@ class RunGameOfLifeFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        log.info("RequestNextStatesFlow.call() called")
+        log.info("RunGameOfLifeFlow.call() called")
 
         log.info("requestBody: ${requestBody.getRequestBody()}")
 
@@ -37,13 +37,23 @@ class RunGameOfLifeFlow: RPCStartableFlow {
 
         val initialGamestate = flowArgs.initialValues
 
+        log.info("trying to get all members")
+        val members = memberLookup.lookup()
+        for (member in members) {
+            log.info(member.name.commonName)
+        }
+
+        log.info("got gamestate, getting ourIdentity next")
+
         val ourIdentity = memberLookup.myInfo().name
+
+        log.info("ourIdentity ${ourIdentity.commonName}")
 
         var message = Message(ourIdentity, jsonMarshallingService.format(initialGamestate))
 
         var allGamestates = mutableListOf<Array<CharArray>>()
 
-        for (i in 1..20) {
+        for (i in 1..4) {
             val session = flowMessaging.initiateFlow(MemberX500Name.parse("CN=State, OU=Admin, O=R3, L=London, C=GB"))
 
             session.send(message)

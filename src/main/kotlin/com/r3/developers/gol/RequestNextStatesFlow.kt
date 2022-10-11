@@ -2,7 +2,6 @@ package com.r3.developers.gol
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
-import net.corda.v5.application.marshalling.parse
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
@@ -10,7 +9,6 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import kotlin.random.Random
 
 @CordaSerializable
 class GameState(val initialValues: Array<CharArray>)
@@ -23,62 +21,62 @@ fun getCoordinates(name: String): Pair<Int, Int>{
     return Pair(x.toInt(), y.toInt())
 }
 
-@InitiatingFlow(protocol = "get-next-states")
-class RequestIndividualStateFlow: RPCStartableFlow {
+//@InitiatingFlow(protocol = "get-next-state")
+//class RequestIndividualStateFlow: RPCStartableFlow {
+//
+//    private companion object {
+//        val log = contextLogger()
+//    }
+//
+//    @CordaInject
+//    lateinit var jsonMarshallingService: JsonMarshallingService
+//
+//    @CordaInject
+//    lateinit var flowMessaging: FlowMessaging
+//
+//    @CordaInject
+//    lateinit var memberLookup: MemberLookup
+//
+//    @Suspendable
+//    override fun call(requestBody: RPCRequestData): String {
+//
+//        log.info("RequestNextStatesFlow.call() called")
+//        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, GameState::class.java)
+//
+//        val gamestate = flowArgs.initialValues
+//
+//        val ourIdentity = memberLookup.myInfo().name
+//
+//        val members = memberLookup.lookup().filter { memberInfo ->  memberInfo.name.organisationUnit != "Admin"}
+//
+//        var response = Message(ourIdentity, "Null")
+//        val message = Message(ourIdentity, jsonMarshallingService.format(gamestate))
+//
+//        for (member in members) {
+//            log.info("member name: ${member.name.commonName}")
+//            var memberCoordinates = getCoordinates(member.name.commonName!!)
+//            val session = flowMessaging.initiateFlow(member.name)
+//
+//            log.info("initiating flow to member: $memberCoordinates")
+//
+//            session.send(message)
+//
+//            response = session.receive(Message::class.java)
+//            log.info("setting $memberCoordinates to ${response.message}")
+//            gamestate[memberCoordinates.first][memberCoordinates.second] = response.message.toCharArray()[0]
+//        }
+//
+//        log.info("resultant gamestate: ")
+//        for (row in gamestate) {
+//            log.info(row.joinToString(","))
+//        }
+//
+//        val newGameState = jsonMarshallingService.format(gamestate)
+//        return newGameState
+//    }
+//}
 
-    private companion object {
-        val log = contextLogger()
-    }
-
-    @CordaInject
-    lateinit var jsonMarshallingService: JsonMarshallingService
-
-    @CordaInject
-    lateinit var flowMessaging: FlowMessaging
-
-    @CordaInject
-    lateinit var memberLookup: MemberLookup
-
-    @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
-
-        log.info("RequestNextStatesFlow.call() called")
-        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, GameState::class.java)
-
-        val gamestate = flowArgs.initialValues
-
-        val ourIdentity = memberLookup.myInfo().name
-
-        val members = memberLookup.lookup().filter { memberInfo ->  memberInfo.name.organisationUnit != "Admin"}
-
-        var response = Message(ourIdentity, "Null")
-        val message = Message(ourIdentity, jsonMarshallingService.format(gamestate))
-
-        for (member in members) {
-            log.info("member name: ${member.name.commonName}")
-            var memberCoordinates = getCoordinates(member.name.commonName!!)
-            val session = flowMessaging.initiateFlow(member.name)
-
-            log.info("initiating flow to member: $memberCoordinates")
-
-            session.send(message)
-
-            response = session.receive(Message::class.java)
-            log.info("setting $memberCoordinates to ${response.message}")
-            gamestate[memberCoordinates.first][memberCoordinates.second] = response.message.toCharArray()[0]
-        }
-
-        log.info("resultant gamestate: ")
-        for (row in gamestate) {
-            log.info(row.joinToString(","))
-        }
-
-        val newGameState = jsonMarshallingService.format(gamestate)
-        return newGameState
-    }
-}
-
-@InitiatedBy(protocol = "get-next-states")
+@InitiatedBy(protocol = "game-of-life")
 class RequestNextStatesFlow: ResponderFlow {
 
     private companion object {
@@ -89,7 +87,7 @@ class RequestNextStatesFlow: ResponderFlow {
     lateinit var jsonMarshallingService: JsonMarshallingService
 
     @CordaInject
-    lateinit var flowMessaging: FlowMessaging
+    lateinit var flowEngine: FlowEngine
 
     @CordaInject
     lateinit var memberLookup: MemberLookup
@@ -99,42 +97,73 @@ class RequestNextStatesFlow: ResponderFlow {
 
         log.info("RequestNextStatesFlow.call() called")
         val receivedMessage = session.receive(Message::class.java)
-        val gamestate = jsonMarshallingService.parse(receivedMessage.message, Array<CharArray>::class.java)
+        val currentGamestate = jsonMarshallingService.parse(receivedMessage.message, Array<CharArray>::class.java)
+
+        val nextGamestate = currentGamestate.map{CharArray(it.size)}
 
         val ourIdentity = memberLookup.myInfo().name
 
         val members = memberLookup.lookup().filter { memberInfo ->  memberInfo.name.organisationUnit != "Admin"}
 
-        var response = Message(ourIdentity, "Null")
-        val message = Message(ourIdentity, jsonMarshallingService.format(gamestate))
-
         for (member in members) {
             log.info("member name: ${member.name.commonName}")
             var memberCoordinates = getCoordinates(member.name.commonName!!)
-            val session = flowMessaging.initiateFlow(member.name)
+            for (row in currentGamestate) {
+                log.info(row.joinToString(","))
+            }
 
-            log.info("initiating flow to member: $memberCoordinates")
 
-            session.send(message)
+            log.info("Creating subflow")
+            val getNextPixelSubflow = GetNextPixel(session, member.name, currentGamestate)
 
-            response = session.receive(Message::class.java)
-            log.info("setting $memberCoordinates to ${response.message}")
-            gamestate[memberCoordinates.first][memberCoordinates.second] = response.message.toCharArray()[0]
+            log.info("calling subflow")
+            val response = flowEngine.subFlow(getNextPixelSubflow)
+
+            log.info("setting $memberCoordinates to ${response}")
+            nextGamestate[memberCoordinates.first][memberCoordinates.second] = response.toCharArray()[0]
         }
 
         log.info("resultant gamestate: ")
-        for (row in gamestate) {
+        for (row in nextGamestate) {
             log.info(row.joinToString(","))
         }
 
-        val newGameState = jsonMarshallingService.format(gamestate)
+        val newGameState = jsonMarshallingService.format(nextGamestate)
 
         session.send(Message(ourIdentity, newGameState))
     }
 }
 
+@InitiatingFlow("get-next-pixel")
+class GetNextPixel(private val existingSession: FlowSession, private val x500Name: MemberX500Name, private val gamestate: Array<CharArray>) : SubFlow<String> {
 
-@InitiatedBy(protocol = "get-next-states")
+    private companion object {
+        val log = contextLogger()
+    }
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var jsonMarshallingService: JsonMarshallingService
+
+    @Suspendable
+    override fun call(): String {
+        log.info("inside Subflow with $x500Name")
+
+        val newSession: FlowSession = flowMessaging.initiateFlow(x500Name)
+
+        log.info("new session created")
+        val newMessage = Message(x500Name, jsonMarshallingService.format(gamestate))
+        newSession.send(newMessage)
+
+        val message = newSession.receive(Message::class.java)
+
+        return message.message
+    }
+}
+
+@InitiatedBy(protocol = "get-next-pixel")
 class GetPixelNextState: ResponderFlow {
 
     private companion object {
