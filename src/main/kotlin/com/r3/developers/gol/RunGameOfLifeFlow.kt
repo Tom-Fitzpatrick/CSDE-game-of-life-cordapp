@@ -9,6 +9,9 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
+@CordaSerializable
+class GameInit(val rounds: Int, val initialGamestate: Array<CharArray>)
+
 @InitiatingFlow(protocol = "game-of-life")
 class RunGameOfLifeFlow: RPCStartableFlow {
 
@@ -28,36 +31,23 @@ class RunGameOfLifeFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        log.info("RunGameOfLifeFlow.call() called")
+        log.info("GOL RunGameOfLifeFlow.call() called")
 
-        log.info("requestBody: ${requestBody.getRequestBody()}")
+        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, GameInit::class.java)
+        log.info("${flowArgs.initialGamestate}")
 
-        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, GameState::class.java)
-        log.info("${flowArgs.initialValues}")
-
-        val initialGamestate = flowArgs.initialValues
-
-        log.info("trying to get all members")
-        val members = memberLookup.lookup()
-        for (member in members) {
-            log.info(member.name.commonName)
-        }
-
-        log.info("got gamestate, getting ourIdentity next")
+        val initialGamestate = flowArgs.initialGamestate
+        val gameRounds = flowArgs.rounds
 
         val ourIdentity = memberLookup.myInfo().name
-
-        log.info("ourIdentity ${ourIdentity.commonName}")
-
         var message = Message(ourIdentity, jsonMarshallingService.format(initialGamestate))
 
         var allGamestates = mutableListOf<Array<CharArray>>()
+        allGamestates.add(initialGamestate)
 
-        for (i in 1..4) {
+        for (i in 1..gameRounds) {
             val session = flowMessaging.initiateFlow(MemberX500Name.parse("CN=State, OU=Admin, O=R3, L=London, C=GB"))
-
             session.send(message)
-
             message = session.receive(Message::class.java)
 
             val newGamestate = jsonMarshallingService.parse(message.message, Array<CharArray>::class.java)
@@ -65,12 +55,12 @@ class RunGameOfLifeFlow: RPCStartableFlow {
         }
 
         for ((i, gamestate) in allGamestates.withIndex()) {
-            log.info("\nGamestate $i:")
+            log.info("\n\nGamestate $i:")
             for (row in gamestate) {
-                log.info(row.joinToString(" "))
+                log.info("|  ${row.joinToString(" ")}")
             }
         }
 
-        return message.message
+        return jsonMarshallingService.format(allGamestates)
     }
 }

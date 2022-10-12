@@ -3,14 +3,16 @@ package com.r3.developers.gol
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
-import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.base.types.MemberX500Name
 import org.junit.jupiter.api.Test
 
-class RequestNextStatesFlowTest {
+class RequestNextGameStateFlowTest {
 
+    private fun parseFinalState(result: String): String {
+        val finalState = result.removeSurrounding("[", "]").split("[", "],").last()
+        return finalState.substring(0, finalState.lastIndex)
+    }
 
-    // Names picked to match the corda network in config/dev-net.json
     private val pixelIdentities = listOf(
         MemberX500Name.parse("CN=X0Y0, OU=pixel, O=R3, L=London, C=GB"),
         MemberX500Name.parse("CN=X1Y0, OU=pixel, O=R3, L=London, C=GB"),
@@ -53,6 +55,52 @@ class RequestNextStatesFlowTest {
     private val gameIdentity = MemberX500Name.parse("CN=Game, OU=Admin, O=R3, L=London, C=GB")
     private val stateIdentity = MemberX500Name.parse("CN=State, OU=Admin, O=R3, L=London, C=GB")
 
+    @Test
+    fun `test individual state is updated correctly`() {
+
+        val simulator = Simulator()
+
+        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
+        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
+        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
+
+        val gameVN = simulator.createVirtualNode(gameHoldingId, RunGameOfLifeFlow::class.java)
+        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextGameStateFlow::class.java)
+
+        for (pixelID in pixelHoldingIds) {
+            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
+        }
+
+        var gameInit = GameInit(
+            1,
+            arrayOf(
+                charArrayOf('.', '.', '.', '.', '.', '.'),
+                charArrayOf('.', '.', 'X', 'X', '.', '.'),
+                charArrayOf('.', 'X', 'X', '.', '.', '.'),
+                charArrayOf('.', '.', 'X', '.', '.', '.'),
+                charArrayOf('.', '.', '.', '.', '.', '.'),
+                charArrayOf('.', '.', '.', '.', '.', '.'),
+        ))
+
+        val requestData = RequestData.create(
+            "request no 1",
+            RunGameOfLifeFlow::class.java,
+            gameInit
+        )
+
+        val flowResponse = gameVN.callFlow(requestData)
+        val finalState = parseFinalState(flowResponse)
+        val expectedResponse = """"......",".XXX..",".X....",".XX...","......","......""""
+
+        println("flow final state:")
+        println(finalState)
+
+        println("expected response:")
+        println(expectedResponse)
+
+        assert(finalState == expectedResponse)
+    }
+
 //    @Test
 //    fun `test that State Flow returns correct message`() {
 //
@@ -62,7 +110,7 @@ class RequestNextStatesFlowTest {
 //        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
 //        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
 //
-//        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java, RequestIndividualStateFlow::class.java)
+//        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextGametateFlow::class.java, RequestIndividualStateFlow::class.java)
 //
 //        for (pixelID in pixelHoldingIds) {
 //            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
@@ -76,7 +124,7 @@ class RequestNextStatesFlowTest {
 //                charArrayOf('.', '.', 'X', '.', '.', '.'),
 //                charArrayOf('.', '.', '.', '.', '.', '.'),
 //                charArrayOf('.', '.', '.', '.', '.', '.'),
-//        ))
+//            ))
 //
 //        val requestData = RequestData.create(
 //            "request no 1",
@@ -95,92 +143,4 @@ class RequestNextStatesFlowTest {
 //
 //        assert(flowResponse == expectedResponse)
 //    }
-
-//    @Test
-//    fun `test that Game Flow returns correct message`() {
-//
-//        val simulator = Simulator()
-//
-//        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
-//        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
-//        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
-//
-//        val gameVN = simulator.createVirtualNode(gameHoldingId, RunGameOfLifeFlow::class.java)
-//        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java)
-//
-//        for (pixelID in pixelHoldingIds) {
-//            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
-//        }
-//
-//        var initialGamestate = GameState(
-//            arrayOf(
-//                charArrayOf('.', '.', '.', '.', '.', '.'),
-//                charArrayOf('.', '.', 'X', 'X', '.', '.'),
-//                charArrayOf('.', 'X', 'X', '.', '.', '.'),
-//                charArrayOf('.', '.', 'X', '.', '.', '.'),
-//                charArrayOf('.', '.', '.', '.', '.', '.'),
-//                charArrayOf('.', '.', '.', '.', '.', '.'),
-//        ))
-//
-//        val requestData = RequestData.create(
-//            "request no 1",
-//            RunGameOfLifeFlow::class.java,
-//            initialGamestate
-//        )
-//
-//        val flowResponse = gameVN.callFlow(requestData)
-//        val expectedResponse = """[".XXX..",".X.X..","X....X","XX...X","X....X",".XXX.."]"""
-//
-//        println("flow response:")
-//        println(flowResponse)
-//        println("expected response:")
-//        println(expectedResponse)
-//
-//
-//        assert(flowResponse == expectedResponse)
-//    }
-
-    @Test
-    fun `test that infinite pattern continues correctly`() {
-
-        val simulator = Simulator()
-
-        val gameHoldingId = HoldingIdentity.Companion.create(gameIdentity)
-        val stateHoldingId = HoldingIdentity.Companion.create(stateIdentity)
-        val pixelHoldingIds = pixelIdentities.map{HoldingIdentity.Companion.create(it)}
-
-        val gameVN = simulator.createVirtualNode(gameHoldingId, RunGameOfLifeFlow::class.java)
-        val stateVN = simulator.createVirtualNode(stateHoldingId, RequestNextStatesFlow::class.java)
-
-        for (pixelID in pixelHoldingIds) {
-            simulator.createVirtualNode(pixelID, GetPixelNextState::class.java)
-        }
-
-        var initialGamestate = GameState(
-            arrayOf(
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', 'X', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.'),
-                charArrayOf('.', '.', '.', '.', '.', '.')
-            ))
-
-        val requestData = RequestData.create(
-            "request no 1",
-            RunGameOfLifeFlow::class.java,
-            initialGamestate
-        )
-
-        val flowResponse = gameVN.callFlow(requestData)
-        val expectedResponse = """["......","..X...","..X...","..X...","......","......"]"""
-
-        println("flow response:")
-        println(flowResponse)
-        println("expected response:")
-        println(expectedResponse)
-
-
-        assert(flowResponse == expectedResponse)
-    }
 }

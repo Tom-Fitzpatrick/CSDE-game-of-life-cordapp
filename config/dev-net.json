@@ -4,7 +4,12 @@
   "CN=State, OU=Admin, O=R3, L=London, C=GB",
   "CN=X0Y0, OU=pixel, O=R3, L=London, C=GB",
   "CN=X1Y0, OU=pixel, O=R3, L=London, C=GB",
+  "CN=X2Y0, OU=pixel, O=R3, L=London, C=GB",
   "CN=X0Y1, OU=pixel, O=R3, L=London, C=GB",
-  "CN=X1Y1, OU=pixel, O=R3, L=London, C=GB"
+  "CN=X1Y1, OU=pixel, O=R3, L=London, C=GB",
+  "CN=X2Y1, OU=pixel, O=R3, L=London, C=GB",
+  "CN=X0Y2, OU=pixel, O=R3, L=London, C=GB",
+  "CN=X1Y2, OU=pixel, O=R3, L=London, C=GB",
+  "CN=X2Y2, OU=pixel, O=R3, L=London, C=GB"
  ]
 }
